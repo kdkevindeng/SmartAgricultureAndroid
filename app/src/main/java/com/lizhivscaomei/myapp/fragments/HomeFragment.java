@@ -1,7 +1,10 @@
 package com.lizhivscaomei.myapp.fragments;
 
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -9,8 +12,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.lizhivscaomei.myapp.MyApplication;
 import com.lizhivscaomei.myapp.R;
+import com.lizhivscaomei.myapp.module.entity.LedgerEntity;
+import com.lizhivscaomei.myapp.module.view.LedgerMainActivity;
+
+import org.xutils.ex.DbException;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -31,6 +47,7 @@ public class HomeFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+    private TextView totalAmountYear, totalWeightYear;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -70,19 +87,59 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
 //        WebView webView=(WebView)inflater.inflate(R.id.homeWebView,container);
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-        WebView webView=(WebView)view.findViewById(R.id.homeWebView);
-        webView.loadUrl("http://www.baidu.com");
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.setWebViewClient(new WebViewClient(){
+        LinearLayout appLayout = (LinearLayout) view.findViewById(R.id.app_ledger);
+        appLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // TODO Auto-generated method stub
-                //返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
-                view.loadUrl(url);
-                return true;
+            public void onClick(View v) {
+                startActivity(new Intent(getContext(), LedgerMainActivity.class));
             }
         });
+        totalAmountYear = (TextView) view.findViewById(R.id.total_amount_year);
+        totalWeightYear = (TextView) view.findViewById(R.id.total_weight_year);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getTotalYear();
+    }
+
+    public void getTotalYear() {
+        new AsyncTask<Void, Void, Map<String,Float>>() {
+
+            @Override
+            protected Map<String,Float> doInBackground(Void... voids) {
+                try {
+                    SimpleDateFormat sf=new SimpleDateFormat("yyyy");
+                    Cursor cursor = MyApplication.getXDbManager().execQuery("select sum(total_amount) total_amount_year,sum(total_weight) total_weight_year from ledger where date like '%" + sf.format(new Date()) + "%'");
+                    if(cursor!=null&&cursor.moveToFirst()){
+                        Map<String,Float> result=new HashMap<>();
+                        result.put("total_amount_year",cursor.getFloat(cursor.getColumnIndex("total_amount_year")));
+                        result.put("total_weight_year",cursor.getFloat(cursor.getColumnIndex("total_weight_year")));
+                        return result;
+                    }
+                } catch (DbException e) {
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Map<String, Float> stringFloatMap) {
+                super.onPostExecute(stringFloatMap);
+                if(stringFloatMap!=null){
+                    if(stringFloatMap.get("total_amount_year")!=null&&!stringFloatMap.get("total_amount_year").isNaN()&&stringFloatMap.get("total_amount_year").floatValue()>0){
+                        totalAmountYear.setText(String.format("%.2f",stringFloatMap.get("total_amount_year").floatValue()));
+                    }
+                    if(stringFloatMap.get("total_weight_year")!=null&&!stringFloatMap.get("total_weight_year").isNaN()&&stringFloatMap.get("total_weight_year").floatValue()>0){
+                        totalWeightYear.setText(String.format("%.2f",stringFloatMap.get("total_weight_year").floatValue()));
+                    }
+                }else {
+                    totalAmountYear.setText("0.00");
+                    totalWeightYear.setText("0.00");
+                }
+            }
+        }.execute();
     }
 
     // TODO: Rename method, update argument and hook method into UI event

@@ -27,6 +27,9 @@ import com.lizhivscaomei.myapp.fragments.FindFragment;
 import com.lizhivscaomei.myapp.fragments.HomeFragment;
 import com.lizhivscaomei.myapp.fragments.NotificationFragment;
 
+import asdf.jwe.gh.AdManager;
+import asdf.jwe.gh.os.OffersManager;
+
 /**
  * 主页
  */
@@ -55,7 +58,7 @@ public class MainActivity extends AppCompatActivity
         viewPager.setAdapter(new BottomNavigationFragmentPagerAdapter(getSupportFragmentManager()));
         //底部导航按钮和事件监听
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        viewPager.setCurrentItem(2);
+        viewPager.setCurrentItem(0);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
 
             @Override
@@ -150,7 +153,6 @@ public class MainActivity extends AppCompatActivity
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (mIsExit) {
                 this.finish();
-
             } else {
                 Toast.makeText(this, "再按一次退出", Toast.LENGTH_SHORT).show();
                 mIsExit = true;
@@ -164,5 +166,10 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }

@@ -4,16 +4,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import com.lizhivscaomei.myapp.MainActivity;
 import com.lizhivscaomei.myapp.MyApplication;
 import com.lizhivscaomei.myapp.R;
 import com.lizhivscaomei.myapp.module.entity.LedgerEntity;
@@ -82,8 +85,14 @@ public class LedgerMainActivity extends AppCompatActivity {
                 }).show();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         queryList();
     }
+
     public void queryList(){
 
         new AsyncTask<Void, Void, List<LedgerEntity>>() {
@@ -100,19 +109,29 @@ public class LedgerMainActivity extends AppCompatActivity {
             protected void onPostExecute(List<LedgerEntity> ledgerEntityList) {
                 super.onPostExecute(ledgerEntityList);
                 List<Map<String, Object>> dataList = new ArrayList<>();
-                for (LedgerEntity entity : ledgerEntityList) {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("entity", entity);
-                    map.put("text1", "总金额：" + String.format("%.2f", entity.getTotalAmount()));
-                    map.put("text2", entity.getDate());
-                    map.put("text3", "总重量：" + String.format("%.2f", entity.getTotalWeight()) + "斤");
-                    map.put("text4", "单价：" + String.format("%.2f", (entity.getTotalAmount() / entity.getTotalWeight())) + "元/斤");
-                    dataList.add(map);
+                if(ledgerEntityList!=null){
+                    for (LedgerEntity entity : ledgerEntityList) {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("entity", entity);
+                        map.put("text1", "总金额：" + String.format("%.2f", entity.getTotalAmount()));
+                        map.put("text2", entity.getDate());
+                        map.put("text3", "总重量：" + String.format("%.2f", entity.getTotalWeight()) + "斤");
+                        map.put("text4", "单价：" + String.format("%.2f", (entity.getTotalAmount() / entity.getTotalWeight())) + "元/斤");
+                        dataList.add(map);
+                    }
                 }
                 ledgerList.setAdapter(new SimpleAdapter(LedgerMainActivity.this, dataList, R.layout.item_horizontal_text3_line2, new String[]{"text1", "text2", "text3", "text4"}, new int[]{R.id.textView1, R.id.textView2, R.id.textView3,R.id.textView4}));
 
             }
         }.execute();
+    }
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            this.finish();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
 }

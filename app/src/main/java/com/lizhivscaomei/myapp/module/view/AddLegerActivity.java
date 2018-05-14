@@ -75,6 +75,7 @@ public class AddLegerActivity extends AppCompatActivity implements LoaderCallbac
         SimpleDateFormat sf=new SimpleDateFormat("yyyy-MM-dd");
         date.setText(sf.format(new Date()));
         totalWeight = (EditText) findViewById(R.id.total_weight);
+        totalWeight.requestFocus();
         totalAmount = (EditText) findViewById(R.id.total_amount);
 
         Button saveBtn = (Button) findViewById(R.id.save);
@@ -193,7 +194,8 @@ public class AddLegerActivity extends AppCompatActivity implements LoaderCallbac
                    if(aBoolean){
 
                        Toast.makeText(AddLegerActivity.this, "保存成功", Toast.LENGTH_SHORT).show();
-                       startActivity(new Intent(AddLegerActivity.this,LedgerMainActivity.class));
+//                       startActivity(new Intent(AddLegerActivity.this,LedgerMainActivity.class));
+                       AddLegerActivity.this.finish();
                    }else {
 
                        Toast.makeText(AddLegerActivity.this, "保存失败", Toast.LENGTH_SHORT).show();
